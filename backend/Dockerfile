@@ -1,8 +1,8 @@
 FROM python:3.10
 
-WORKDIR /app
+WORKDIR /backend
 
-COPY . /app
+COPY . /backend
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

@@ -1,0 +1,67 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - build_folder:/var/www/frontend
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - techeer
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3306:3306"
+    networks:
+      - techeer
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      - mysql
+    command: >
+        bash -c "python manage.py makemigrations &&
+                python manage.py migrate &&
+                gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+    tty: true
+    networks:
+      - techeer
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/:/frontend
+      - build_folder:/frontend/dist
+      - /frontend/node_modules
+    networks:
+      - techeer
+
+networks:
+  techeer:
+    driver: bridge
+
+volumes:
+  build_folder: null
