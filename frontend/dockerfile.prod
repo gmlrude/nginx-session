@@ -1,0 +1,17 @@
+FROM node:18
+
+WORKDIR /frontend
+
+COPY package.json yarn.lock ./
+
+RUN yarn install
+RUN yarn
+
+RUN yarn add @types/node --dev
+COPY . ./
+
+RUN yarn build
+
+EXPOSE 3000
+
+CMD ["yarn","dev"]
